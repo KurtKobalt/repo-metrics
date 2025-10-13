@@ -1,0 +1,47 @@
+name: Repo Metrics
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # Nightly (02:00 UTC)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # to publish gh-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas
+
+      - name: Generate metrics
+        env:
+          # Prefer PAT if you need cross-repo/org or private access
+          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          OWNER: ${{ vars.METRICS_OWNER }}  # e.g. your-username or your-org
+          INCLUDE_PRIVATE: ${{ vars.METRICS_INCLUDE_PRIVATE || 'false' }}
+          INCLUDE_FORKS: ${{ vars.METRICS_INCLUDE_FORKS || 'false' }}
+          REPOS_WHITELIST: ${{ vars.METRICS_REPOS_WHITELIST || '' }} # optional CSV
+        run: |
+          mkdir -p site
+          python scripts/metrics.py
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          force_orphan: true
+
+

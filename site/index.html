@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi‑repo GitHub Metrics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; }
+    h1 { margin-bottom: 6px; }
+    .cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin: 16px 0 24px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px 16px; }
+    .grid { display: grid; gap: 24px; }
+    canvas { max-width: 100%; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+  </style>
+  <style>
+    /* give canvases some height so they render nicely */
+    #commitsChart, #churnChart { height: 320px; }
+  </style>
+  <noscript>This page requires JavaScript to load charts.</noscript>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="icon" href="data:,">
+  <meta name="robots" content="noindex" />
+</head>
+<body>
+  <h1>Multi‑repo GitHub Metrics</h1>
+  <div id="meta"></div>
+
+  <div class="cards">
+    <div class="card"><strong>Repos</strong><div id="repoCount">—</div></div>
+    <div class="card"><strong>Commits (13w)</strong><div id="c13">—</div></div>
+    <div class="card"><strong>Churn (13w)</strong><div id="ch13">—</div></div>
+    <div class="card"><strong>Commits (52w)</strong><div id="c52">—</div></div>
+    <div class="card"><strong>Churn (52w)</strong><div id="ch52">—</div></div>
+  </div>
+
+  <div class="grid">
+    <section>
+      <h3>Commits per week (all repos)</h3>
+      <canvas id="commitsChart"></canvas>
+    </section>
+    <section>
+      <h3>Additions vs Deletions per week (all repos)</h3>
+      <canvas id="churnChart"></canvas>
+    </section>
+    <section>
+      <h3>Repo leaderboard (last ~90 days)</h3>
+      <table id="leader"></table>
+    </section>
+  </div>
+
+  <script>
+    async function main(){
+      const res = await fetch('metrics.json', {cache: 'no-store'});
+      const data = await res.json();
+      const fmt = new Intl.NumberFormat();
+
+      document.getElementById('meta').textContent = `Owner: ${data.owner} • Generated: ${new Date(data.generated_at).toLocaleString()}`;
+      document.getElementById('repoCount').textContent = data.repo_count;
+      document.getElementById('c13').textContent = fmt.format(data.aggregate.totals_13w.commits);
+      document.getElementById('ch13').textContent = fmt.format(data.aggregate.totals_13w.churn);
+      document.getElementById('c52').textContent = fmt.format(data.aggregate.totals_52w.commits);
+      document.getElementById('ch52').textContent = fmt.format(data.aggregate.totals_52w.churn);
+
+      const weeks = data.aggregate.weekly.map(x => x.week_start);
+      const commits = data.aggregate.weekly.map(x => x.commits);
+      const adds = data.aggregate.weekly.map(x => x.additions);
+      const dels = data.aggregate.weekly.map(x => x.deletions);
+
+      new Chart(document.getElementById('commitsChart'), {
+        type: 'line',
+        data: { labels: weeks, datasets: [{ label: 'Commits', data: commits }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } } }
+      });
+
+      new Chart(document.getElementById('churnChart'), {
+        type: 'line',
+        data: { labels: weeks, datasets: [
+          { label: 'Additions', data: adds },
+          { label: 'Deletions', data: dels }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } } }
+      });
+
+      // Leaderboard (last ~90 days)
+      const rows = Object.entries(data.repos)
+        .map(([name, r]) => ({
+          name,
+          commits: r.totals_13w.commits,
+          churn: r.totals_13w.churn,
+          adds: r.totals_13w.additions,
+          dels: r.totals_13w.deletions,
+          private: r.private
+        }))
+        .sort((a,b) => b.commits - a.commits)
+        .slice(0, 50);
+
+      const tbl = document.getElementById('leader');
+      tbl.innerHTML = `<tr><th>Repo</th><th>Commits (13w)</th><th>Churn</th><th>Additions</th><th>Deletions</th><th>Private</th></tr>`
+        + rows.map(r => `<tr><td>${r.name}</td><td>${r.commits}</td><td>${r.churn}</td><td>${r.adds}</td><td>${r.dels}</td><td>${r.private ? '✓' : ''}</td></tr>`).join('');
+    }
+    main();
+  </script>
+</body>
+</html>
+
+
