@@ -37,6 +37,18 @@ def get(url: str, params: Dict[str, Any] | None = None, retries: int = 3, backof
     r.raise_for_status()
 
 
+def safe_stats_json(r):
+    if r is None:
+        return []
+    # GitHub may return 204 No Content or an empty body while warming stats
+    if getattr(r, "status_code", None) == 204 or not getattr(r, "content", b""):
+        return []
+    try:
+        return r.json()
+    except Exception:
+        return []
+
+
 def owner_type(owner: str) -> str:
     r = get(f"{GITHUB_API}/users/{owner}")
     return r.json().get("type", "User")
@@ -71,14 +83,14 @@ def list_repos(owner: str, include_private: bool, include_forks: bool) -> List[D
 
 def weekly_commit_activity(owner: str, repo: str) -> List[Dict[str, Any]]:
     # Returns list of {week, total, days}
-    r = get(f"{GITHUB_API}/repos/{owner}/{repo}/stats/commit_activity", retries=6)
-    return r.json() if r is not None else []
+    r = get(f"{GITHUB_API}/repos/{owner}/{repo}/stats/commit_activity", retries=8)
+    return safe_stats_json(r)
 
 
 def weekly_code_frequency(owner: str, repo: str) -> List[List[int]]:
     # Returns list of [week_epoch, additions, deletions_negative]
-    r = get(f"{GITHUB_API}/repos/{owner}/{repo}/stats/code_frequency", retries=6)
-    return r.json() if r is not None else []
+    r = get(f"{GITHUB_API}/repos/{owner}/{repo}/stats/code_frequency", retries=8)
+    return safe_stats_json(r)
 
 
 def epoch_to_date(epoch_secs: int) -> str:
