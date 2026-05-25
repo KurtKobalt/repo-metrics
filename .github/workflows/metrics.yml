@@ -27,15 +27,25 @@ jobs:
 
       - name: Generate metrics
         env:
-          # Prefer PAT if you need cross-repo/org or private access
           GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-          OWNER: ${{ vars.METRICS_OWNER }}  # e.g. your-username or your-org
+          OWNER: ${{ vars.METRICS_OWNER || 'onevisa-ai' }}
           INCLUDE_PRIVATE: ${{ vars.METRICS_INCLUDE_PRIVATE || 'false' }}
           INCLUDE_FORKS: ${{ vars.METRICS_INCLUDE_FORKS || 'false' }}
-          REPOS_WHITELIST: ${{ vars.METRICS_REPOS_WHITELIST || '' }} # optional CSV
+          REPOS_WHITELIST: ${{ vars.METRICS_REPOS_WHITELIST || 'ov-capture-backend,ov-capture-frontend,ov-admin,ov-cms,ov-superadmin,ov-translator,ov-submitter' }}
         run: |
           mkdir -p site
           python scripts/metrics.py
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build dashboard
+        working-directory: dashboard
+        run: |
+          npm ci
+          npm run build
 
       - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

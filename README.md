@@ -1,25 +1,52 @@
-# Multi‑repo GitHub Metrics — Commits & Churn
+# OneVisa Repo Metrics
 
-Nightly job aggregates commits and weekly churn (additions + deletions) for all repos under a user or org. Publishes an interactive dashboard via GitHub Pages.
+Nightly job aggregates commits and weekly churn (additions + deletions) for OneVisa repos. Publishes an interactive dashboard via GitHub Pages.
 
-## Setup
-1. Create a new repo (e.g., `repo-metrics`) and push these files.
-2. **Secrets** → add `GH_PAT` with scopes: `repo`, `read:org` (needed for private/org repos).
-3. **Variables** → set:
-   - `METRICS_OWNER` = `<your-user-or-org>`
-   - `METRICS_INCLUDE_PRIVATE` = `true`/`false`
-   - `METRICS_INCLUDE_FORKS` = `false`
-   - `METRICS_REPOS_WHITELIST` = optional CSV list
-4. Enable **Pages** on the repo: Source → `gh-pages` branch.
-5. Run the workflow (Actions → Repo Metrics → Run workflow) or wait for the nightly cron.
+Owner: `onevisa-ai` · Repos: `ov-capture-backend`, `ov-capture-frontend`, `ov-admin`, `ov-cms`, `ov-superadmin`, `ov-translator`, `ov-submitter` (configured in `.github/workflows/metrics.yml`).
+
+## How to update the numbers
+
+### Option A — GitHub Actions (recommended)
+Runs nightly at 02:00 UTC. To regenerate on demand:
+```bash
+gh workflow run "Repo Metrics" -R KurtKobalt/repo-metrics
+gh run watch -R KurtKobalt/repo-metrics
+```
+Or use the Actions tab → "Repo Metrics" → "Run workflow".
+
+The job needs:
+- Secret `GH_PAT` with scopes `repo`, `read:org` (so it can read private OV repos).
+- Optional Variables override the workflow defaults:
+  - `METRICS_OWNER` (default `onevisa-ai`)
+  - `METRICS_REPOS_WHITELIST` (default = all 7 OV repos)
+  - `METRICS_INCLUDE_PRIVATE` (default `false` — set to `true` for private repos)
+
+### Option B — Local regeneration
+```bash
+export GITHUB_TOKEN=$(gh auth token)
+export OWNER=onevisa-ai
+export INCLUDE_PRIVATE=true
+export REPOS_WHITELIST=ov-capture-backend,ov-capture-frontend,ov-admin,ov-cms,ov-superadmin,ov-translator,ov-submitter
+
+pip install requests
+python scripts/metrics.py                          # writes site/metrics.json
+cp site/metrics.json dashboard/public/metrics.json # so the dev server picks it up
+```
+
+First runs can take 5–15 minutes because GitHub returns 202 while it warms `/stats/*` caches.
+
+## Run the dashboard
+```bash
+cd dashboard
+npm install
+npm run dev          # http://localhost:5173/repo-metrics/
+npm run build        # static build to dashboard/dist/
+```
+
+## Adding a repo
+Edit `REPOS_WHITELIST` in `.github/workflows/metrics.yml` (the default after `||`). Or set `METRICS_REPOS_WHITELIST` as a GitHub Actions Variable to override without editing code.
 
 ## Notes
-- Uses GitHub `/stats` endpoints:
-  - `commit_activity` → weekly commit totals (52w)
-  - `code_frequency` → weekly additions/deletions (deletions negative)
-- If a repo’s stats return **202 Accepted**, GitHub is warming the cache. The workflow retries a few times.
-- Leaderboard covers ~13 weeks (~90 days). Adjust in `metrics.py` if needed.
-
-## Extending
-- Add PR review time, lead time, or open/closed issues by querying Issues/PRs endpoints and appending series to `metrics.json`.
-- Add repo filters (languages, topics) by fetching repo metadata and excluding noise.
+- Uses GitHub `/stats` endpoints (`commit_activity`, `code_frequency`, `punch_card`, `contributors`).
+- 202 responses are retried up to 8 times with backoff.
+- Leaderboard window: last 13 weeks (~90 days). Adjust in `metrics.py`.

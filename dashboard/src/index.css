@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #3b82f6;
+  --color-chart-1: #3b82f6;
+  --color-chart-2: #22c55e;
+  --color-chart-3: #ef4444;
+  --color-chart-4: #f59e0b;
+  --color-chart-5: #8b5cf6;
+  --color-chart-6: #ec4899;
+  --color-chart-7: #06b6d4;
+  --color-chart-8: #84cc16;
+}
+
+.dark {
+  --color-primary: #60a5fa;
+  --color-chart-1: #60a5fa;
+  --color-chart-2: #4ade80;
+  --color-chart-3: #f87171;
+  --color-chart-4: #fbbf24;
+  --color-chart-5: #a78bfa;
+  --color-chart-6: #f472b6;
+  --color-chart-7: #22d3ee;
+  --color-chart-8: #a3e635;
+}
+
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #9ca3af;
+}
+
+.dark .recharts-legend-item-text {
+  color: #d1d5db !important;
+}
+
+.dark .recharts-brush-texts text {
+  fill: #9ca3af;
+}
