@@ -1,18 +1,16 @@
-name: Repo Metrics
+name: Manual Repo Metrics (GitHub Pages)
 
 on:
-  schedule:
-    - cron: "0 2 * * *"   # Nightly (02:00 UTC)
   workflow_dispatch: {}
 
 permissions:
-  contents: write   # to publish gh-pages
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Check out dashboard
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -20,26 +18,45 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Clone OneVisa repositories
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          METRICS_REPOS_ROOT: ${{ runner.temp }}/onevisa-repositories
         run: |
-          python -m pip install --upgrade pip
-          pip install requests pandas
+          mkdir -p "$METRICS_REPOS_ROOT"
+          while IFS='|' read -r repository directory; do
+            if ! gh repo clone "onevisa-ai/$repository" "$METRICS_REPOS_ROOT/$directory" -- --quiet --single-branch; then
+              echo "::warning::Could not clone onevisa-ai/$repository"
+            fi
+          done <<'REPOSITORIES'
+          ov-capture-frontend|ov-capture-frontend
+          ov-capture-backend|ov-capture-backend
+          ov-admin|ov-admin
+          ov-superadmin|ov-superadmin
+          ov-cms|ov-cms
+          ov-translator|ov-translator
+          ov-submitter|ov-submitter
+          ov-website|ov-website2
+          ov-control-center|ov-control-center
+          ov-qa|ov-qa
+          ov-pulse|ov-pulse
+          claude-plugins|claude-plugins
+          REPOSITORIES
 
-      - name: Generate metrics
+      - name: Verify and generate metrics
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-          OWNER: ${{ vars.METRICS_OWNER || 'onevisa-ai' }}
-          INCLUDE_PRIVATE: ${{ vars.METRICS_INCLUDE_PRIVATE || 'false' }}
-          INCLUDE_FORKS: ${{ vars.METRICS_INCLUDE_FORKS || 'false' }}
-          REPOS_WHITELIST: ${{ vars.METRICS_REPOS_WHITELIST || 'ov-capture-backend,ov-capture-frontend,ov-admin,ov-cms,ov-superadmin,ov-translator,ov-submitter' }}
+          METRICS_REPOS_ROOT: ${{ runner.temp }}/onevisa-repositories
         run: |
-          mkdir -p site
-          python scripts/metrics.py
+          python3 -m unittest discover -s tests
+          python3 scripts/metrics.py
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
 
       - name: Build dashboard
         working-directory: dashboard
@@ -53,5 +70,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
           force_orphan: true
-
-

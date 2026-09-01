@@ -1,15 +1,23 @@
-import { RepoSelector } from '../filters/RepoSelector'
+import { useFilters } from '../../context/FilterContext'
+import type { MetricsData } from '../../types/metrics'
 import { DateRangePicker } from '../filters/DateRangePicker'
+import { PersonSelector } from '../filters/PersonSelector'
+import { RepoSelector } from '../filters/RepoSelector'
 
-interface Props {
-  repos: string[]
-}
-
-export function FilterBar({ repos }: Props) {
+export function FilterBar({ data }: { data: MetricsData }) {
+  const { hasFilters, resetFilters } = useFilters()
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl">
-      <RepoSelector repos={repos} />
-      <DateRangePicker />
+    <div className="filter-bar">
+      <div className="filter-bar-inner">
+        <RepoSelector repos={data.repos} />
+        <PersonSelector people={data.people} />
+        <DateRangePicker earliest={data.data_range.earliest_date} latest={data.data_range.latest_date} />
+        {hasFilters && (
+          <button type="button" className="reset-filters" onClick={resetFilters}>
+            Reset filters
+          </button>
+        )}
+      </div>
     </div>
   )
 }

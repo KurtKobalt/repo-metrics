@@ -4,9 +4,17 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/repo-metrics/',
+  base: process.env.VITE_BASE_PATH ?? '/repo-metrics/',
   build: {
     outDir: '../site',
-    emptyOutDir: false,
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('recharts') || id.includes('d3-')) return 'charts'
+          if (id.includes('react')) return 'react'
+        },
+      },
+    },
   },
 })

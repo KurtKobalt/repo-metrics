@@ -1,38 +1,47 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import type { DateRange, FilterState } from '../types/metrics'
 import { getDefaultDateRange } from '../utils/dateUtils'
 
 interface FilterContextValue extends FilterState {
   setSelectedRepos: (repos: string[]) => void
+  setSelectedPeople: (people: string[]) => void
   setDateRange: (range: DateRange) => void
   resetFilters: () => void
-}
-
-const defaults = {
-  selectedRepos: [] as string[],
-  dateRange: getDefaultDateRange(),
+  hasFilters: boolean
 }
 
 const FilterContext = createContext<FilterContextValue | null>(null)
 
 export function FilterProvider({ children }: { children: ReactNode }) {
-  const [selectedRepos, setSelectedRepos] = useState<string[]>(defaults.selectedRepos)
-  const [dateRange, setDateRange] = useState<DateRange>(defaults.dateRange)
+  const [selectedRepos, setSelectedRepos] = useState<string[]>([])
+  const [selectedPeople, setSelectedPeople] = useState<string[]>([])
+  const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange)
 
   const resetFilters = useCallback(() => {
-    setSelectedRepos(defaults.selectedRepos)
+    setSelectedRepos([])
+    setSelectedPeople([])
     setDateRange(getDefaultDateRange())
   }, [])
 
-  return (
-    <FilterContext.Provider value={{ selectedRepos, dateRange, setSelectedRepos, setDateRange, resetFilters }}>
-      {children}
-    </FilterContext.Provider>
+  const value = useMemo(
+    () => ({
+      selectedRepos,
+      selectedPeople,
+      dateRange,
+      setSelectedRepos,
+      setSelectedPeople,
+      setDateRange,
+      resetFilters,
+      hasFilters: selectedRepos.length > 0 || selectedPeople.length > 0,
+    }),
+    [dateRange, resetFilters, selectedPeople, selectedRepos],
   )
+
+  return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
 }
 
 export function useFilters(): FilterContextValue {
-  const ctx = useContext(FilterContext)
-  if (!ctx) throw new Error('useFilters must be used within FilterProvider')
-  return ctx
+  const context = useContext(FilterContext)
+  if (!context) throw new Error('useFilters must be used within FilterProvider')
+  return context
 }

@@ -1,49 +1,48 @@
 import { useMemo } from 'react'
-import type { MetricsData, FilterState } from '../types/metrics'
+import type { FilterState, MetricsData } from '../types/metrics'
 import {
-  getFilteredWeekly,
-  getFilteredPunchCard,
-  getFilteredContributors,
-  getFilteredLanguages,
+  getCommitTypeData,
+  getContributorTotals,
+  getDailyMetrics,
+  getFilteredActivity,
+  getFilteredCommits,
+  getHourlyData,
   getRepoTotals,
-  getDayOfWeekData,
-  getHourOfDayData,
   getSummaryStats,
+  getWeekdayData,
+  getWeeklyMetrics,
 } from '../utils/dataTransformers'
 
 export function useFilteredData(data: MetricsData | null, filters: FilterState) {
-  const weekly = useMemo(
-    () => (data ? getFilteredWeekly(data, filters) : []),
-    [data, filters]
-  )
-
-  const punchCard = useMemo(
-    () => (data ? getFilteredPunchCard(data, filters) : []),
-    [data, filters]
-  )
-
-  const contributors = useMemo(
-    () => (data ? getFilteredContributors(data, filters) : []),
-    [data, filters]
-  )
-
-  const languages = useMemo(
-    () => (data ? getFilteredLanguages(data, filters) : {}),
-    [data, filters]
-  )
-
-  const repoTotals = useMemo(
-    () => (data ? getRepoTotals(data, filters) : []),
-    [data, filters]
-  )
-
-  const dayOfWeek = useMemo(() => getDayOfWeekData(punchCard), [punchCard])
-  const hourOfDay = useMemo(() => getHourOfDayData(punchCard), [punchCard])
-
-  const summary = useMemo(
-    () => (data ? getSummaryStats(weekly, data, filters) : null),
-    [data, weekly, filters]
-  )
-
-  return { weekly, punchCard, contributors, languages, repoTotals, dayOfWeek, hourOfDay, summary }
+  return useMemo(() => {
+    if (!data) {
+      return {
+        activity: [],
+        commits: [],
+        daily: [],
+        weekly: [],
+        repoTotals: [],
+        contributorTotals: [],
+        weekdayData: [],
+        commitTypeData: [],
+        hourlyData: [],
+        summary: null,
+      }
+    }
+    const activity = getFilteredActivity(data, filters)
+    const commits = getFilteredCommits(data, filters)
+    const daily = getDailyMetrics(activity)
+    return {
+      activity,
+      commits,
+      daily,
+      weekly: getWeeklyMetrics(activity),
+      repoTotals: getRepoTotals(activity, data),
+      contributorTotals: getContributorTotals(activity, data),
+      weekdayData: getWeekdayData(daily),
+      commitTypeData: getCommitTypeData(activity),
+      hourlyData: getHourlyData(commits),
+      summary: getSummaryStats(activity, data, filters),
+    }
+  }, [data, filters])
 }

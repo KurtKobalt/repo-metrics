@@ -8,6 +8,8 @@ dashboard/public/metrics.json
 site/*.js
 site/*.css
 site/assets/
+site/og.png
+dist/
 
 # debug artifacts
 .playwright-mcp/

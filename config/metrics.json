@@ -1,0 +1,147 @@
+{
+  "owner": "onevisa-ai",
+  "repositories": [
+    {
+      "id": "ov-capture-frontend",
+      "display_name": "Capture Frontend",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-capture-backend",
+      "display_name": "Capture Backend",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-admin",
+      "display_name": "Admin",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-superadmin",
+      "display_name": "Superadmin",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-cms",
+      "display_name": "CMS",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-translator",
+      "display_name": "Translator",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-submitter",
+      "display_name": "Submitter",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-website2",
+      "display_name": "Website",
+      "github_name": "ov-website",
+      "historical_owners": ["onevisa-ai"]
+    },
+    {
+      "id": "ov-control-center",
+      "display_name": "Control Center",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-qa",
+      "display_name": "QA",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "ov-pulse",
+      "display_name": "Pulse",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "claude-plugins",
+      "display_name": "Claude Plugins",
+      "historical_owners": ["onevisa-ai", "beto-ov", "KurtKobalt"]
+    },
+    {
+      "id": "immi-scrapper",
+      "display_name": "IMMI Scrapper",
+      "github_owner": "",
+      "local_repository": true,
+      "historical_owners": []
+    },
+    {
+      "id": "ov-agents",
+      "display_name": "Agents",
+      "github_owner": "",
+      "local_repository": true,
+      "historical_owners": []
+    }
+  ],
+  "automation": {
+    "id": "automation",
+    "name": "Automation",
+    "login": "automation",
+    "patterns": [
+      "[bot]",
+      "github-actions",
+      "onevisa-forward-port",
+      "claude",
+      "checkpointer",
+      "qa agent",
+      "antigravity agent",
+      "google-labs-jules",
+      "moss",
+      "openclaw"
+    ]
+  },
+  "people": [
+    {
+      "id": "beto",
+      "name": "Beto",
+      "login": "beto-ov",
+      "avatar_url": "",
+      "kind": "human",
+      "aliases": ["Alberto", "Alberto Alcaraz", "Alberto (aider)", "Alberto aider", "KurtKobalt", "beto-ov"]
+    },
+    {
+      "id": "alexis",
+      "name": "Alexis",
+      "login": "alexisroque",
+      "avatar_url": "",
+      "kind": "human",
+      "aliases": ["Alexis", "Alexis Roqué", "alexisroque", "ov-alexis-roque"]
+    },
+    {
+      "id": "juan",
+      "name": "Juan",
+      "login": "juan-ov",
+      "avatar_url": "",
+      "kind": "human",
+      "aliases": ["Juan Fornell", "juan-ov"]
+    },
+    {
+      "id": "enrico",
+      "name": "Enrico",
+      "login": "enrico-ov",
+      "avatar_url": "",
+      "kind": "human",
+      "aliases": ["Enrico", "Enric Malras", "enrico-ov"]
+    },
+    {
+      "id": "john",
+      "name": "John",
+      "login": "john-astete",
+      "avatar_url": "",
+      "kind": "human",
+      "aliases": ["John Astete", "John Esteban Astete Arambarri"]
+    },
+    {
+      "id": "jorge",
+      "name": "Jorge",
+      "login": "jorge-tricarico",
+      "avatar_url": "",
+      "kind": "human",
+      "aliases": ["JORGE EZEQUIEL TRICARICO", "Jorge Tricarico"]
+    }
+  ]
+}
